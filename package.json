@@ -1,0 +1,28 @@
+{
+  "name": "react-native-workers",
+  "version": "0.1.1",
+  "description": "react native web workers",
+  "main": "main",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/devfd/react-native-workers.git"
+  },
+  "keywords": [
+    "react-native",
+    "react-component",
+    "worker",
+    "web worker",
+    "background",
+    "ios",
+    "android"
+  ],
+  "author": "devfd",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/devfd/react-native-workers/issues"
+  },
+  "homepage": "https://github.com/devfd/react-native-workers#readme"
+}
