@@ -1,10 +1,13 @@
 
-
 module.exports = (WorkerModule, EventEmitter) => {
 
   class Worker {
     constructor(jsPath) {
-      this.id = WorkerModule.startWorker(jsPath)
+      if (!jsPath || !jsPath.endsWith('.js')) {
+        throw new Error("Invalid worker path. Only js files are supported");
+      }
+
+      this.id = WorkerModule.startWorker(jsPath.replace(".js", ""))
         .then(id => {
           EventEmitter.addListener(`Worker${id}`, (message) => {
             !!message && this.onmessage && this.onmessage(message);

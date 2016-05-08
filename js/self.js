@@ -1,5 +1,4 @@
 
-
 module.exports = (WorkerSelf, EventEmitter) => {
 
   const self = {
