@@ -46,7 +46,12 @@ public class WorkerModule extends ReactContextBaseJavaModule implements Lifecycl
             devServerHelper = new DevServerHelper(devInternalSettings);
         }
 
-        final File bundleFile = new File(context.getFilesDir(), bundleName);
+        String bundleSlug = bundleName;
+        if (bundleName.contains("/")) {
+            bundleSlug = bundleName.replaceAll("/", "_");
+        }
+
+        final File bundleFile = new File(context.getFilesDir(), bundleSlug);
 
         final JSWorker worker = new JSWorker(bundleName, devServerHelper.getSourceUrl(bundleName),bundleFile.getAbsolutePath());
 
