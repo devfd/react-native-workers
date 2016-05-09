@@ -15,6 +15,8 @@ import com.facebook.react.devsupport.DevServerHelper;
 import java.io.File;
 import java.util.HashMap;
 
+import co.apptailor.Worker.core.StubDevSupportManager;
+
 public class WorkerModule extends ReactContextBaseJavaModule implements LifecycleEventListener {
     private String TAG = "WorkerModule";
 
@@ -38,7 +40,7 @@ public class WorkerModule extends ReactContextBaseJavaModule implements Lifecycl
     @ReactMethod
     public void startWorker(String bundleName, final Promise promise) {
         if (devServerHelper == null) {
-            DevInternalSettings devInternalSettings = new DevInternalSettings(context, null);
+            DevInternalSettings devInternalSettings = new DevInternalSettings(context, new StubDevSupportManager());
             devInternalSettings.setHotModuleReplacementEnabled(false);
             devInternalSettings.setElementInspectorEnabled(false);
             devInternalSettings.setReloadOnJSChangeEnabled(false);

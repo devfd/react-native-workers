@@ -28,11 +28,11 @@ project.xcworkspace
 .gradle
 local.properties
 *.iml
-/local.properties
-/.idea/workspace.xml
-/.idea/libraries
-/build
-/captures
+local.properties
+.idea/workspace.xml
+.idea/libraries
+build
+captures
 
 # node.js
 #
