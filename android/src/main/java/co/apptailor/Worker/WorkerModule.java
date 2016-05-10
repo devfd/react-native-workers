@@ -1,6 +1,7 @@
 package co.apptailor.Worker;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Handler;
 import android.util.Log;
 
@@ -114,6 +115,14 @@ public class WorkerModule extends ReactContextBaseJavaModule implements Lifecycl
         }
 
         worker.postMessage(message);
+    }
+
+    @ReactMethod
+    public void startService() {
+        Activity activity = getCurrentActivity();
+        if (activity == null) { return; }
+        Intent intent = new Intent(activity, JSService.class);
+        activity.startService(intent);
     }
 
     @Override
