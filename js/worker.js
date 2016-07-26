@@ -1,30 +1,31 @@
+import {
+  NativeModules,
+  DeviceEventEmitter,
+} from 'react-native';
 
-module.exports = (WorkerModule, EventEmitter) => {
+const { WorkerManager } = NativeModules;
 
-  class Worker {
-    constructor(jsPath) {
-      if (!jsPath || !jsPath.endsWith('.js')) {
-        throw new Error("Invalid worker path. Only js files are supported");
-      }
-
-      this.id = WorkerModule.startWorker(jsPath.replace(".js", ""))
-        .then(id => {
-          EventEmitter.addListener(`Worker${id}`, (message) => {
-            !!message && this.onmessage && this.onmessage(message);
-          });
-          return id;
-        })
-        .catch(err => { throw new Error(err) });
+export default class Worker {
+  constructor(jsPath) {
+    if (!jsPath || !jsPath.endsWith('.js')) {
+      throw new Error("Invalid worker path. Only js files are supported");
     }
 
-    postMessage(message) {
-      this.id.then(id => WorkerModule.postWorkerMessage(id, message));
-    }
-
-    terminate() {
-      this.id.then(WorkerModule.stopWorker);
-    }
+    this.id = WorkerManager.startWorker(jsPath.replace(".js", ""))
+      .then(id => {
+        DeviceEventEmitter.addListener(`Worker${id}`, (message) => {
+          !!message && this.onmessage && this.onmessage(message);
+        });
+        return id;
+      })
+      .catch(err => { throw new Error(err) });
   }
 
-  return Worker;
-};
+  postMessage(message) {
+    this.id.then(id => WorkerManager.postWorkerMessage(id, message));
+  }
+
+  terminate() {
+    this.id.then(WorkerManager.stopWorker);
+  }
+}

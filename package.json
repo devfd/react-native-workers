@@ -2,7 +2,7 @@
   "name": "react-native-workers",
   "version": "0.2.1",
   "description": "react native web workers",
-  "main": "main",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -15,6 +15,7 @@
     "react-component",
     "worker",
     "web worker",
+    "WebWorker",
     "background",
     "ios",
     "android"

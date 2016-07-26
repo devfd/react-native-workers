@@ -1,17 +1,21 @@
+import {
+  NativeModules,
+  DeviceEventEmitter,
+} from 'react-native';
 
-module.exports = (WorkerSelf, EventEmitter) => {
+const { WorkerSelfManager } = NativeModules;
 
-  const self = {
-    onmessage: null,
-    postMessage: (message) => {
-      if (!message) { return; }
-      WorkerSelf.postMessage(message);
-    }
-  };
+const self = {
+  onmessage: null,
 
-  EventEmitter.addListener("WorkerMessage", (message) => {
-    !!message && self.onmessage && self.onmessage(message);
-  });
-
-  return self;
+  postMessage: (message) => {
+    if (!message) { return; }
+    WorkerSelfManager.postMessage(message);
+  }
 };
+
+DeviceEventEmitter.addListener("WorkerMessage", (message) => {
+  !!message && self.onmessage && self.onmessage(message);
+});
+
+export default self;
