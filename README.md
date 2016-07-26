@@ -13,18 +13,18 @@ Spin worker threads and run CPU intensive tasks in the background. Bonus point o
 npm install react-native-workers --save
 ```
 
-## Setup
-
-### rnpm
+### Automatic setup
 
 simply `rnpm link react-native-workers` and you'r good to go.
 
-### iOS
+### Manual setup
+
+#### iOS
 
 1. Open your project in XCode, right click on Libraries and click Add Files to "Your Project Name". Look under node_modules/react-native-workers/ios and add `Workers.xcodeproj`
 2. Add `libWorkers.a` to `Build Phases -> Link Binary With Libraries`
 
-### Android
+#### Android
 
 in `android/settings.gradle`
 
