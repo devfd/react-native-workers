@@ -3,15 +3,9 @@
 Spin worker threads and run CPU intensive tasks in the background. Bonus point on Android you can keep a worker alive even when a user quit the application :fireworks:
 
 ## Features
-- JS workers for iOS and Android
+- JS web workers for iOS and Android
 - access to native modules (network, geolocation, storage ...)
 - Android Services in JS :tada:
-
-## Warning
-This plugin is still in beta and some features are missing. Current restrictions include:
-- worker files are only loaded from http://localhost:8081.
-- worker files are not yet packaged with your application.
-- no HMR support. no hot-reload support.
 
 ## Installation
 
@@ -20,6 +14,10 @@ npm install react-native-workers --save
 ```
 
 ## Setup
+
+### rnpm
+
+simply `rnpm link react-native-workers` and you'r good to go.
 
 ### iOS
 
@@ -44,32 +42,35 @@ dependencies {
 }
 ```
 
-and finally, in your `MainActivity.java` add:
+and finally, in your `MainApplication.java` add:
 
 ```java
 
 import co.apptailor.Worker.WorkerPackage; // <--- This!
 
-public class MainActivity extends ReactActivity {
+public class MainApplication extends Application implements ReactApplication {
 
- @Override
- protected String getMainComponentName() {
-     return "MyApp";
- }
+private final ReactNativeHost mReactNativeHost = new ReactNativeHost(this) {
+    @Override
+    protected boolean getUseDeveloperSupport() {
+      return BuildConfig.DEBUG;
+    }
 
- @Override
- protected boolean getUseDeveloperSupport() {
-     return BuildConfig.DEBUG;
- }
+    @Override
+    protected List<ReactPackage> getPackages() {
+      return Arrays.<ReactPackage>asList(
+          new MainReactPackage(),
+          new WorkerPackage() // <--- and this
+      );
+    }
+  };
 
- @Override
- protected List<ReactPackage> getPackages() {
-   return Arrays.<ReactPackage>asList(
-     new MainReactPackage(),
-     new WorkerPackage() // <---- and This!
-   );
- }
+  @Override
+  public ReactNativeHost getReactNativeHost() {
+      return mReactNativeHost;
+  }
 }
+
 ```
 
 ## JS API
@@ -79,7 +80,7 @@ From your application:
 import { Worker } from 'react-native-workers';
 
 /* start worker */
-const worker = new Worker("path/to/js/worker");
+const worker = new Worker("path/to/worker.js");
 
 /* post message to worker. String only ! */
 worker.postMessage("hello from application");
@@ -94,7 +95,7 @@ worker.terminate();
 
 ```
 
-From your worker:
+From your worker js file:
 ```js
 import { self } from 'react-native-workers';
 
@@ -106,4 +107,16 @@ self.onmessage = (message) => {
 self.postMessage("hello from worker");
 ```
 
-##### Reload your application to restart your worker with the latest bundle version
+## Lifecycle
+
+- the workers are paused when the app enters in the background
+- the workers are resumed once the app is running in the foreground
+- During development, when you reload the main JS bundle (shake device -> `Reload`) the workers are killed
+
+## Todo
+
+- [x] Android - download worker files from same location as main bundle
+- [ ] iOS - download worker files from same location as main bundle
+- [ ] script to package worker files for release build
+- [ ] load worker files from disk if not debug
+
