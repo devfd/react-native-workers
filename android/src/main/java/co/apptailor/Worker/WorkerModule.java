@@ -1,92 +1,69 @@
 package co.apptailor.Worker;
 
-import android.app.Activity;
-import android.content.Intent;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
+import com.facebook.react.ReactApplication;
+import com.facebook.react.ReactInstanceManager;
+import com.facebook.react.bridge.JSBundleLoader;
 import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
-import com.facebook.react.devsupport.DevInternalSettings;
-import com.facebook.react.devsupport.DevServerHelper;
+import com.facebook.react.devsupport.DevSupportManager;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 
-import co.apptailor.Worker.core.StubDevSupportManager;
+import co.apptailor.Worker.core.BaseReactPackage;
+import co.apptailor.Worker.core.ReactContextBuilder;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okio.Okio;
+import okio.Sink;
+
 
 public class WorkerModule extends ReactContextBaseJavaModule implements LifecycleEventListener {
-    private String TAG = "WorkerModule";
 
-    private ReactApplicationContext context;
-
+    private String TAG = "WorkerManager";
     private HashMap<Integer, JSWorker> workers;
-    private DevServerHelper devServerHelper;
 
-    public WorkerModule(ReactApplicationContext reactContext) {
+    public WorkerModule(final ReactApplicationContext reactContext) {
         super(reactContext);
-        this.context = reactContext;
-        this.workers = new HashMap<>();
-        context.addLifecycleEventListener(this);
+        workers = new HashMap<>();
+        reactContext.addLifecycleEventListener(this);
     }
 
     @Override
     public String getName() {
-        return "RNWorker";
+        return "WorkerManager";
     }
 
     @ReactMethod
-    public void startWorker(String bundleName, final Promise promise) {
-        if (devServerHelper == null) {
-            DevInternalSettings devInternalSettings = new DevInternalSettings(context, new StubDevSupportManager());
-            devInternalSettings.setHotModuleReplacementEnabled(false);
-            devInternalSettings.setElementInspectorEnabled(false);
-            devInternalSettings.setReloadOnJSChangeEnabled(false);
+    public void startWorker(final String jsFileName, final Promise promise) {
+        final String jsFileSlug = jsFileName.contains("/") ? jsFileName.replaceAll("/", "_") : jsFileName;
+        final String bundleUrl = bundleUrlForFile(jsFileName);
+        final String bundleOut = getReactApplicationContext().getFilesDir().getAbsolutePath() + "/" + jsFileSlug;
 
-            devServerHelper = new DevServerHelper(devInternalSettings);
+        //TODO handle when release build
+        downloadScriptToFileSync(bundleUrl, bundleOut);
+
+        try {
+            JSWorker worker = new JSWorker(jsFileSlug);
+            worker.runFromContext(
+                    getReactApplicationContext(),
+                    createCatalystBuilder(bundleUrl, bundleOut)
+            );
+            workers.put(worker.getWorkerId(), worker);
+            promise.resolve(worker.getWorkerId());
+        } catch (Exception e) {
+            e.printStackTrace();
+            promise.reject(e);
         }
-
-        String bundleSlug = bundleName;
-        if (bundleName.contains("/")) {
-            bundleSlug = bundleName.replaceAll("/", "_");
-        }
-
-        final File bundleFile = new File(context.getFilesDir(), bundleSlug);
-
-        final JSWorker worker = new JSWorker(bundleName, devServerHelper.getSourceUrl(bundleName),bundleFile.getAbsolutePath());
-
-        devServerHelper.downloadBundleFromURL(new DevServerHelper.BundleDownloadCallback() {
-            @Override
-            public void onSuccess() {
-                Activity activity = getCurrentActivity();
-                if (activity == null) {
-                    Log.d(TAG, "Worker startWorker - activity is null. aborting.");
-                    return;
-                }
-
-                activity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            worker.runFromContext(context);
-                            workers.put(worker.getWorkerId(), worker);
-                            promise.resolve(worker.getWorkerId());
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            promise.reject(e);
-                        }
-                    }
-                });
-            }
-
-            @Override
-            public void onFailure(Exception cause) {
-                promise.reject(cause);
-            }
-        }, bundleName, bundleFile);
     }
 
     @ReactMethod
@@ -97,7 +74,7 @@ public class WorkerModule extends ReactContextBaseJavaModule implements Lifecycl
             return;
         }
 
-        new Handler().post(new Runnable() {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
                 worker.terminate();
@@ -119,23 +96,41 @@ public class WorkerModule extends ReactContextBaseJavaModule implements Lifecycl
 
     @ReactMethod
     public void startService() {
-        Activity activity = getCurrentActivity();
-        if (activity == null) { return; }
-        Intent intent = new Intent(activity, JSService.class);
-        activity.startService(intent);
+//        Activity activity = getCurrentActivity();
+//        if (activity == null) { return; }
+//        Intent intent = new Intent(activity, JSService.class);
+//        activity.startService(intent);
     }
 
     @Override
-    public void onHostResume() {}
+    public void onHostResume() {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                for (int workerId : workers.keySet()) {
+                    workers.get(workerId).onHostResume();
+                }
+            }
+        });
+    }
 
     @Override
-    public void onHostPause() {}
+    public void onHostPause() {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                for (int workerId : workers.keySet()) {
+                    workers.get(workerId).onHostPause();
+                }
+            }
+        });
+    }
 
     @Override
     public void onHostDestroy() {
-        Log.d(TAG, "Clean JS Workers");
+        Log.d(TAG, "onHostDestroy - Clean JS Workers");
 
-        new Handler().post(new Runnable() {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
                 for (int workerId : workers.keySet()) {
@@ -149,5 +144,58 @@ public class WorkerModule extends ReactContextBaseJavaModule implements Lifecycl
     public void onCatalystInstanceDestroy() {
         super.onCatalystInstanceDestroy();
         onHostDestroy();
+    }
+
+    /*
+     *  Helper methods
+     */
+
+    private ReactInstanceManager getReactInstanceManager() {
+        ReactApplication reactApplication = (ReactApplication)getCurrentActivity().getApplication();
+        return reactApplication.getReactNativeHost().getReactInstanceManager();
+    }
+
+    private DevSupportManager getDevSupportManager() {
+        return getReactInstanceManager().getDevSupportManager();
+    }
+
+    private String bundleUrlForFile(final String fileName) {
+        // http://localhost:8081/index.android.bundle?platform=android&dev=true&hot=false&minify=false
+        String sourceUrl = getDevSupportManager().getSourceUrl().replace("http://", "");
+        return  "http://"
+                + sourceUrl.split("/")[0]
+                + "/"
+                + fileName
+                + ".bundle?platform=android&dev=true&hot=false&minify=false";
+    }
+
+    private ReactContextBuilder createCatalystBuilder(String bundleUrl, String bundleOut) {
+        JSBundleLoader bundleLoader = JSBundleLoader.createCachedBundleFromNetworkLoader(bundleUrl, bundleOut);
+
+        return new ReactContextBuilder(getReactApplicationContext())
+                .setJSBundleLoader(bundleLoader)
+                .setDevSupportManager(getDevSupportManager())
+                .setReactPackage(new BaseReactPackage(getReactInstanceManager()));
+    }
+
+    private void downloadScriptToFileSync(String bundleUrl, String bundleOut) {
+        OkHttpClient client = new OkHttpClient();
+        final File out = new File(bundleOut);
+
+        Request request = new Request.Builder()
+                .url(bundleUrl)
+                .build();
+
+        try {
+            Response response = client.newCall(request).execute();
+            if (!response.isSuccessful()) {
+                throw new RuntimeException("Error downloading web worker script - " + response.toString());
+            }
+
+            Sink output = Okio.sink(out);
+            Okio.buffer(response.body().source()).readAll(output);
+        } catch (IOException e) {
+            throw new RuntimeException("Exception downloading web worker script to file", e);
+        }
     }
 }

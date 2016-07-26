@@ -21,7 +21,7 @@ public class WorkerSelfModule extends ReactContextBaseJavaModule {
 
     @Override
     public String getName() {
-        return "RNWorkerSelf";
+        return "WorkerSelfManager";
     }
 
     @ReactMethod
