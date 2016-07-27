@@ -45,24 +45,30 @@ public class WorkerModule extends ReactContextBaseJavaModule implements Lifecycl
 
     @ReactMethod
     public void startWorker(final String jsFileName, final Promise promise) {
-        final String jsFileSlug = jsFileName.contains("/") ? jsFileName.replaceAll("/", "_") : jsFileName;
-        final String bundleUrl = bundleUrlForFile(jsFileName);
-        final String bundleOut = getReactApplicationContext().getFilesDir().getAbsolutePath() + "/" + jsFileSlug;
+        Log.d(TAG, "Starting web worker - " + jsFileName);
 
-        //TODO handle when release build
-        downloadScriptToFileSync(bundleUrl, bundleOut);
+        String jsFileSlug = jsFileName.contains("/") ? jsFileName.replaceAll("/", "_") : jsFileName;
+
+        JSBundleLoader bundleLoader = getDevSupportManager().getDevSupportEnabled()
+                ? createDevBundleLoader(jsFileName, jsFileSlug)
+                : createReleaseBundleLoader(jsFileName, jsFileSlug);
 
         try {
+            ReactContextBuilder workerContextBuilder = new ReactContextBuilder(getReactApplicationContext())
+                    .setJSBundleLoader(bundleLoader)
+                    .setDevSupportManager(getDevSupportManager())
+                    .setReactPackage(new BaseReactPackage(getReactInstanceManager()));
+
             JSWorker worker = new JSWorker(jsFileSlug);
             worker.runFromContext(
                     getReactApplicationContext(),
-                    createCatalystBuilder(bundleUrl, bundleOut)
+                    workerContextBuilder
             );
             workers.put(worker.getWorkerId(), worker);
             promise.resolve(worker.getWorkerId());
         } catch (Exception e) {
-            e.printStackTrace();
             promise.reject(e);
+            getDevSupportManager().handleException(e);
         }
     }
 
@@ -150,6 +156,21 @@ public class WorkerModule extends ReactContextBaseJavaModule implements Lifecycl
      *  Helper methods
      */
 
+    private JSBundleLoader createDevBundleLoader(String jsFileName, String jsFileSlug) {
+        String bundleUrl = bundleUrlForFile(jsFileName);
+        String bundleOut = getReactApplicationContext().getFilesDir().getAbsolutePath() + "/" + jsFileSlug;
+
+        Log.d(TAG, "createDevBundleLoader - download web worker to - " + bundleOut);
+        downloadScriptToFileSync(bundleUrl, bundleOut);
+
+        return JSBundleLoader.createCachedBundleFromNetworkLoader(bundleUrl, bundleOut);
+    }
+
+    private JSBundleLoader createReleaseBundleLoader(String jsFileName, String jsFileSlug) {
+        Log.d(TAG, "createReleaseBundleLoader - reading file from assets");
+        return JSBundleLoader.createFileLoader(getReactApplicationContext(), "assets://workers/" + jsFileSlug + ".bundle");
+    }
+
     private ReactInstanceManager getReactInstanceManager() {
         ReactApplication reactApplication = (ReactApplication)getCurrentActivity().getApplication();
         return reactApplication.getReactNativeHost().getReactInstanceManager();
@@ -167,15 +188,6 @@ public class WorkerModule extends ReactContextBaseJavaModule implements Lifecycl
                 + "/"
                 + fileName
                 + ".bundle?platform=android&dev=true&hot=false&minify=false";
-    }
-
-    private ReactContextBuilder createCatalystBuilder(String bundleUrl, String bundleOut) {
-        JSBundleLoader bundleLoader = JSBundleLoader.createCachedBundleFromNetworkLoader(bundleUrl, bundleOut);
-
-        return new ReactContextBuilder(getReactApplicationContext())
-                .setJSBundleLoader(bundleLoader)
-                .setDevSupportManager(getDevSupportManager())
-                .setReactPackage(new BaseReactPackage(getReactInstanceManager()));
     }
 
     private void downloadScriptToFileSync(String bundleUrl, String bundleOut) {
