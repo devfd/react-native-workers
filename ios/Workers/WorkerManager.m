@@ -4,6 +4,7 @@
 #import "RCTBridge.h"
 #import "RCTBridge+Private.h"
 #import "RCTEventDispatcher.h"
+#import "RCTBundleURLProvider.h"
 
 @implementation WorkerManager
 
@@ -23,12 +24,12 @@ RCT_REMAP_METHOD(startWorker,
   }
 
   int workerId = abs(arc4random());
-  NSString *bundleURL = [NSString stringWithFormat:@"http://localhost:8081/%@.bundle?platform=ios&dev=true", name];
 
-  NSLog(@"starting Worker %@", bundleURL);
+  NSURL *workerURL = [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:name fallbackResource:nil];
+  NSLog(@"starting Worker %@", [workerURL absoluteString]);
 
 
-   RCTBridge *workerBridge = [[RCTBridge alloc] initWithBundleURL:[NSURL URLWithString:bundleURL]
+   RCTBridge *workerBridge = [[RCTBridge alloc] initWithBundleURL:workerURL
                                             moduleProvider:nil
                                              launchOptions:nil];
 
