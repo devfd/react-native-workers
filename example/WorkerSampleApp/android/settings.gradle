@@ -1,0 +1,4 @@
+rootProject.name = 'WorkerSampleApp'
+
+include ':app', ':react-native-workers'
+project(':react-native-workers').projectDir = new File(rootProject.projectDir, '../../../android')
