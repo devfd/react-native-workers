@@ -8,6 +8,6 @@
   "dependencies": {
     "react": "15.2.1",
     "react-native": "0.30.0",
-    "react-native-workers": "^0.2.1"
+    "react-native-workers": "^0.3.0"
   }
 }
