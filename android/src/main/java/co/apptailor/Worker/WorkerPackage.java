@@ -12,6 +12,11 @@ import java.util.List;
 
 public class WorkerPackage implements ReactPackage {
 
+    private ReactPackage additionalWorkerPackages[];
+
+    public WorkerPackage(ReactPackage ... additionalWorkerPackages) {
+        this.additionalWorkerPackages = additionalWorkerPackages;
+    }
 
     @Override
     public List<Class<? extends JavaScriptModule>> createJSModules() {
@@ -26,7 +31,7 @@ public class WorkerPackage implements ReactPackage {
     @Override
     public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
         return Arrays.<NativeModule>asList(
-            new WorkerModule(reactContext)
+            new WorkerModule(reactContext, additionalWorkerPackages)
         );
     }
 }

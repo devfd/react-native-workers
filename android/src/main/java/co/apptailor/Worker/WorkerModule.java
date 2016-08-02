@@ -6,6 +6,7 @@ import android.util.Log;
 
 import com.facebook.react.ReactApplication;
 import com.facebook.react.ReactInstanceManager;
+import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.JSBundleLoader;
 import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.Promise;
@@ -16,6 +17,8 @@ import com.facebook.react.devsupport.DevSupportManager;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import co.apptailor.Worker.core.BaseReactPackage;
@@ -32,9 +35,12 @@ public class WorkerModule extends ReactContextBaseJavaModule implements Lifecycl
     private String TAG = "WorkerManager";
     private HashMap<Integer, JSWorker> workers;
 
-    public WorkerModule(final ReactApplicationContext reactContext) {
+    private ReactPackage additionalWorkerPackages[];
+
+    public WorkerModule(final ReactApplicationContext reactContext, ReactPackage additionalWorkerPackages[]) {
         super(reactContext);
         workers = new HashMap<>();
+        this.additionalWorkerPackages = additionalWorkerPackages;
         reactContext.addLifecycleEventListener(this);
     }
 
@@ -54,10 +60,13 @@ public class WorkerModule extends ReactContextBaseJavaModule implements Lifecycl
                 : createReleaseBundleLoader(jsFileName, jsFileSlug);
 
         try {
+            ArrayList<ReactPackage> workerPackages = new ArrayList<ReactPackage>(Arrays.asList(additionalWorkerPackages));
+            workerPackages.add(0, new BaseReactPackage(getReactInstanceManager()));
+
             ReactContextBuilder workerContextBuilder = new ReactContextBuilder(getReactApplicationContext())
                     .setJSBundleLoader(bundleLoader)
                     .setDevSupportManager(getDevSupportManager())
-                    .setReactPackage(new BaseReactPackage(getReactInstanceManager()));
+                    .setReactPackages(workerPackages);
 
             JSWorker worker = new JSWorker(jsFileSlug);
             worker.runFromContext(

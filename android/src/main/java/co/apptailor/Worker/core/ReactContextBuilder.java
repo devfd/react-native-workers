@@ -19,6 +19,7 @@ import com.facebook.react.bridge.queue.ReactQueueConfigurationSpec;
 import com.facebook.react.devsupport.DevSupportManager;
 import com.facebook.soloader.SoLoader;
 
+import java.util.ArrayList;
 import java.util.concurrent.Callable;
 
 public class ReactContextBuilder {
@@ -26,7 +27,7 @@ public class ReactContextBuilder {
     private Context parentContext;
     private JSBundleLoader jsBundleLoader;
     private DevSupportManager devSupportManager;
-    private ReactPackage reactPackage;
+    private ArrayList<ReactPackage> reactPackages;
 
     public ReactContextBuilder(Context context) {
         this.parentContext = context;
@@ -43,8 +44,8 @@ public class ReactContextBuilder {
         return this;
     }
 
-    public ReactContextBuilder setReactPackage(ReactPackage reactPackage) {
-        this.reactPackage = reactPackage;
+    public ReactContextBuilder setReactPackages(ArrayList<ReactPackage> reactPackages) {
+        this.reactPackages = reactPackages;
         return this;
     }
 
@@ -125,14 +126,20 @@ public class ReactContextBuilder {
     }
 
     private void addJSModules(JavaScriptModuleRegistry.Builder jsModulesBuilder) {
-        for (Class<? extends JavaScriptModule> jsModuleClass : reactPackage.createJSModules()) {
-            jsModulesBuilder.add(jsModuleClass);
+        for (int i = 0; i < reactPackages.size(); i++) {
+            ReactPackage reactPackage = reactPackages.get(i);
+            for (Class<? extends JavaScriptModule> jsModuleClass : reactPackage.createJSModules()) {
+                jsModulesBuilder.add(jsModuleClass);
+            }
         }
     }
 
     private void addNativeModules(ReactApplicationContext reactContext, NativeModuleRegistry.Builder nativeRegistryBuilder) {
-        for (NativeModule nativeModule : reactPackage.createNativeModules(reactContext)) {
-            nativeRegistryBuilder.add(nativeModule);
+        for (int i = 0; i < reactPackages.size(); i++) {
+            ReactPackage reactPackage = reactPackages.get(i);
+            for (NativeModule nativeModule : reactPackage.createNativeModules(reactContext)) {
+                nativeRegistryBuilder.add(nativeModule);
+            }
         }
     }
 }
