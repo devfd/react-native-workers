@@ -73,6 +73,12 @@ private final ReactNativeHost mReactNativeHost = new ReactNativeHost(this) {
 
 ```
 
+**Note**: only the official react native modules are available from your workers (vibration, fetch, etc...). To include additional modules in your workers add them to the WorkerPackage constructor. Like this:
+
+```java
+new WorkerPackage(new MyAwesomePackage(), new MyAmazingPackage())`
+```
+
 ## JS API
 
 From your application:
@@ -116,7 +122,7 @@ self.postMessage("hello from worker");
 ## Todo
 
 - [x] Android - download worker files from same location as main bundle
-- [ ] iOS - download worker files from same location as main bundle
+- [x] iOS - download worker files from same location as main bundle
 - [ ] script to package worker files for release build
-- [ ] load worker files from disk if not debug
+- [x] load worker files from disk if not debug
 
