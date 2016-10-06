@@ -15,7 +15,15 @@ npm install react-native-workers --save
 
 ### Automatic setup
 
-simply `rnpm link react-native-workers` and you'r good to go.
+Simply run one of the following commands and you're good to go.
+
+#### react-native >= 0.28.0
+
+simply run `react-native link`
+
+#### react-native < 0.28.0
+
+`rnpm link react-native-workers`
 
 ### Manual setup
 
