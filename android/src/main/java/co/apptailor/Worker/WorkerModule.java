@@ -177,7 +177,7 @@ public class WorkerModule extends ReactContextBaseJavaModule implements Lifecycl
 
     private JSBundleLoader createReleaseBundleLoader(String jsFileName, String jsFileSlug) {
         Log.d(TAG, "createReleaseBundleLoader - reading file from assets");
-        return JSBundleLoader.createFileLoader("assets://workers/" + jsFileSlug + ".bundle");
+        return JSBundleLoader.createAssetLoader(getReactApplicationContext(), "assets://workers/" + jsFileSlug + ".bundle");
     }
 
     private ReactInstanceManager getReactInstanceManager() {
