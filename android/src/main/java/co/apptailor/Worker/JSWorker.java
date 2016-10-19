@@ -39,15 +39,27 @@ public class JSWorker {
     }
 
     public void postMessage(String message) {
+        if (reactContext == null) {
+            return;
+        }
+        
         reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                 .emit("WorkerMessage", message);
     }
 
     public void onHostResume() {
+        if (reactContext == null) {
+            return;
+        }
+        
         reactContext.onHostResume(null);
     }
 
     public void onHostPause() {
+        if (reactContext == null) {
+            return;
+        }
+        
         reactContext.onHostPause();
     }
 
