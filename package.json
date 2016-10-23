@@ -1,6 +1,6 @@
 {
   "name": "react-native-workers",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "react native web workers",
   "main": "index.js",
   "scripts": {

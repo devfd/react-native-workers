@@ -39,25 +39,29 @@ public class JSWorker {
     }
 
     public void postMessage(String message) {
-        reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+        if (reactContext != null) {
+            reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                 .emit("WorkerMessage", message);
+        }
     }
 
     public void onHostResume() {
-        reactContext.onHostResume(null);
+        if (reactContext != null) {
+            reactContext.onHostResume(null);
+        }
     }
 
     public void onHostPause() {
-        reactContext.onHostPause();
+        if (reactContext != null) {
+            reactContext.onHostPause();
+        }
     }
 
     public void terminate() {
-        if (reactContext == null) {
-            return;
+        if (reactContext != null) {
+            reactContext.onHostPause();
+            reactContext.destroy();
+            reactContext = null;
         }
-
-        reactContext.onHostPause();
-        reactContext.destroy();
-        reactContext = null;
     }
 }

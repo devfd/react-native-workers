@@ -4,15 +4,15 @@ import android.content.Context;
 
 import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.CatalystInstance;
-import com.facebook.react.bridge.CatalystInstanceImpl;
-import com.facebook.react.bridge.JSBundleLoader;
-import com.facebook.react.bridge.JSCJavaScriptExecutor;
-import com.facebook.react.bridge.JavaScriptExecutor;
+import com.facebook.react.cxxbridge.CatalystInstanceImpl;
+import com.facebook.react.cxxbridge.JSBundleLoader;
+import com.facebook.react.cxxbridge.JSCJavaScriptExecutor;
+import com.facebook.react.cxxbridge.JavaScriptExecutor;
 import com.facebook.react.bridge.JavaScriptModule;
 import com.facebook.react.bridge.JavaScriptModuleRegistry;
 import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.NativeModuleCallExceptionHandler;
-import com.facebook.react.bridge.NativeModuleRegistry;
+import com.facebook.react.cxxbridge.NativeModuleRegistry;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.bridge.queue.ReactQueueConfigurationSpec;
@@ -50,7 +50,7 @@ public class ReactContextBuilder {
     }
 
     public ReactApplicationContext build() throws Exception {
-        JavaScriptExecutor jsExecutor = new JSCJavaScriptExecutor.Factory().create(new WritableNativeMap());
+        JavaScriptExecutor jsExecutor = new JSCJavaScriptExecutor.Factory(new WritableNativeMap()).create();
 
         // fresh new react context
         final ReactApplicationContext reactContext = new ReactApplicationContext(parentContext);
