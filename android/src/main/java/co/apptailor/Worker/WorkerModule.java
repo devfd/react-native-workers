@@ -149,7 +149,7 @@ public class WorkerModule extends ReactContextBaseJavaModule implements Lifecycl
             @Override
             public void run() {
                 for (int workerId : workers.keySet()) {
-                    workers.get(workerId).terminate();
+                    stopWorker(workerId);
                 }
             }
         });
