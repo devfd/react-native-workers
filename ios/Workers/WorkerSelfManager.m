@@ -1,8 +1,8 @@
 #import "WorkerSelfManager.h"
 #include <stdlib.h>
-#import "RCTBridge.h"
-#import "RCTBridge+Private.h"
-#import "RCTEventDispatcher.h"
+#import <React/RCTBridge.h>
+#import <React/RCTBridge+Private.h>
+#import <React/RCTEventDispatcher.h>
 
 @implementation WorkerSelfManager
 
@@ -21,8 +21,7 @@ RCT_EXPORT_METHOD(postMessage: (NSString *)message)
 
   NSString *eventName = [NSString stringWithFormat:@"Worker%i", self.workerId];
 
-  [self.parentBridge.eventDispatcher sendAppEventWithName:eventName
-                                               body:message];
+  [self.parentBridge.eventDispatcher sendAppEventWithName:eventName body:message];
 }
 
 @end

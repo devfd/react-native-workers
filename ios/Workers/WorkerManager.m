@@ -1,10 +1,10 @@
 #import "WorkerManager.h"
 #import "WorkerSelfManager.h"
 #include <stdlib.h>
-#import "RCTBridge.h"
-#import "RCTBridge+Private.h"
-#import "RCTEventDispatcher.h"
-#import "RCTBundleURLProvider.h"
+#import <React/RCTBridge.h>
+#import <React/RCTBridge+Private.h>
+#import <React/RCTEventDispatcher.h>
+#import <React/RCTBundleURLProvider.h>
 
 @implementation WorkerManager
 
@@ -25,11 +25,10 @@ RCT_REMAP_METHOD(startWorker,
 
   int workerId = abs(arc4random());
 
-  NSURL *workerURL = [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:name fallbackResource:nil];
-  NSLog(@"starting Worker %@", [workerURL absoluteString]);
-
-
-   RCTBridge *workerBridge = [[RCTBridge alloc] initWithBundleURL:workerURL
+  //NSURL *workerURL = [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:name fallbackResource:nil];
+  NSURL *workerURL = [[NSBundle mainBundle] URLForResource:name withExtension:@"js"];
+  //NSLog(@"starting Worker %@", [workerURL absoluteString]);
+  RCTBridge *workerBridge = [[RCTBridge alloc] initWithBundleURL:workerURL
                                             moduleProvider:nil
                                              launchOptions:nil];
 
