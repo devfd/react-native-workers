@@ -2,7 +2,7 @@
 #ifndef WorkerSelfManager_h
 #define WorkerSelfManager_h
 
-#import "RCTBridgeModule.h"
+#import <React/RCTBridgeModule.h>
 
 @interface WorkerSelfManager : NSObject <RCTBridgeModule>
 @property int workerId;

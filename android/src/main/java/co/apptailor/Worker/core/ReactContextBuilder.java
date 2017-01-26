@@ -2,23 +2,28 @@ package co.apptailor.Worker.core;
 
 import android.content.Context;
 
+import com.facebook.react.EagerModuleProvider;
 import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.CatalystInstance;
-import com.facebook.react.bridge.CatalystInstanceImpl;
-import com.facebook.react.bridge.JSBundleLoader;
-import com.facebook.react.bridge.JSCJavaScriptExecutor;
-import com.facebook.react.bridge.JavaScriptExecutor;
+import com.facebook.react.cxxbridge.CatalystInstanceImpl;
+import com.facebook.react.cxxbridge.JSBundleLoader;
+import com.facebook.react.cxxbridge.JSCJavaScriptExecutor;
+import com.facebook.react.cxxbridge.JavaScriptExecutor;
 import com.facebook.react.bridge.JavaScriptModule;
 import com.facebook.react.bridge.JavaScriptModuleRegistry;
+import com.facebook.react.module.model.ReactModuleInfo;
+import com.facebook.react.bridge.ModuleSpec;
 import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.NativeModuleCallExceptionHandler;
-import com.facebook.react.bridge.NativeModuleRegistry;
+import com.facebook.react.cxxbridge.NativeModuleRegistry;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.bridge.queue.ReactQueueConfigurationSpec;
 import com.facebook.react.devsupport.DevSupportManager;
 import com.facebook.soloader.SoLoader;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
 
@@ -50,7 +55,8 @@ public class ReactContextBuilder {
     }
 
     public ReactApplicationContext build() throws Exception {
-        JavaScriptExecutor jsExecutor = new JSCJavaScriptExecutor.Factory().create(new WritableNativeMap());
+        //JavaScriptExecutor jsExecutor = new JSCJavaScriptExecutor.Factory().create(new WritableNativeMap());
+        JavaScriptExecutor jsExecutor = new JSCJavaScriptExecutor.Factory(new WritableNativeMap()).create();
 
         // fresh new react context
         final ReactApplicationContext reactContext = new ReactApplicationContext(parentContext);
@@ -59,8 +65,9 @@ public class ReactContextBuilder {
         }
 
         // load native modules
-        NativeModuleRegistry.Builder nativeRegistryBuilder = new NativeModuleRegistry.Builder();
-        addNativeModules(reactContext, nativeRegistryBuilder);
+        final List<ModuleSpec> mModuleSpecList = new ArrayList<>();
+        //NativeModuleRegistry.Builder nativeRegistryBuilder = new NativeModuleRegistry.Builder();
+        addNativeModules(reactContext,mModuleSpecList); //, nativeRegistryBuilder);
 
         // load js modules
         JavaScriptModuleRegistry.Builder jsModulesBuilder = new JavaScriptModuleRegistry.Builder();
@@ -69,7 +76,10 @@ public class ReactContextBuilder {
         CatalystInstanceImpl.Builder catalystInstanceBuilder = new CatalystInstanceImpl.Builder()
                 .setReactQueueConfigurationSpec(ReactQueueConfigurationSpec.createDefault())
                 .setJSExecutor(jsExecutor)
-                .setRegistry(nativeRegistryBuilder.build())
+                //.setRegistry(nativeRegistryBuilder.build())
+                .setRegistry(new NativeModuleRegistry(
+                  mModuleSpecList,
+                  Collections.<Class, ReactModuleInfo>emptyMap()))
                 .setJSModuleRegistry(jsModulesBuilder.build())
                 .setJSBundleLoader(jsBundleLoader)
                 .setNativeModuleCallExceptionHandler(devSupportManager != null
@@ -134,11 +144,13 @@ public class ReactContextBuilder {
         }
     }
 
-    private void addNativeModules(ReactApplicationContext reactContext, NativeModuleRegistry.Builder nativeRegistryBuilder) {
+    private void addNativeModules(ReactApplicationContext reactContext,List<ModuleSpec> mModuleSpecList) { //, NativeModuleRegistry.Builder nativeRegistryBuilder) {
         for (int i = 0; i < reactPackages.size(); i++) {
             ReactPackage reactPackage = reactPackages.get(i);
             for (NativeModule nativeModule : reactPackage.createNativeModules(reactContext)) {
-                nativeRegistryBuilder.add(nativeModule);
+                //nativeRegistryBuilder.add(nativeModule);
+                ModuleSpec ms = new ModuleSpec(nativeModule.getClass(), new EagerModuleProvider(nativeModule));
+                mModuleSpecList.add(ms);
             }
         }
     }

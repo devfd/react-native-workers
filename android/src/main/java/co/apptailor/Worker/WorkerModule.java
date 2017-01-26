@@ -7,7 +7,7 @@ import android.util.Log;
 import com.facebook.react.ReactApplication;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactPackage;
-import com.facebook.react.bridge.JSBundleLoader;
+import com.facebook.react.cxxbridge.JSBundleLoader;
 import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -149,7 +149,8 @@ public class WorkerModule extends ReactContextBaseJavaModule implements Lifecycl
             @Override
             public void run() {
                 for (int workerId : workers.keySet()) {
-                    workers.get(workerId).terminate();
+                    //workers.get(workerId).terminate();
+                    stopWorker(workerId);
                 }
             }
         });
@@ -177,7 +178,8 @@ public class WorkerModule extends ReactContextBaseJavaModule implements Lifecycl
 
     private JSBundleLoader createReleaseBundleLoader(String jsFileName, String jsFileSlug) {
         Log.d(TAG, "createReleaseBundleLoader - reading file from assets");
-        return JSBundleLoader.createFileLoader(getReactApplicationContext(), "assets://workers/" + jsFileSlug + ".bundle");
+        //return JSBundleLoader.createFileLoader(getReactApplicationContext(), "assets://workers/" + jsFileSlug + ".bundle");
+        return JSBundleLoader.createFileLoader("assets://workers/" + jsFileSlug + ".bundle");
     }
 
     private ReactInstanceManager getReactInstanceManager() {

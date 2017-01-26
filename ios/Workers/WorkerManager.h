@@ -2,7 +2,7 @@
 #ifndef WorkerManager_h
 #define WorkerManager_h
 
-#import "RCTBridgeModule.h"
+#import <React/RCTBridgeModule.h>
 
 @interface WorkerManager : NSObject <RCTBridgeModule>
 @end
