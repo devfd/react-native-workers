@@ -2,21 +2,23 @@ package co.apptailor.Worker.core;
 
 import android.content.Context;
 
+import com.facebook.react.NativeModuleRegistryBuilder;
 import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.CatalystInstance;
-import com.facebook.react.bridge.CatalystInstanceImpl;
-import com.facebook.react.bridge.JSBundleLoader;
-import com.facebook.react.bridge.JSCJavaScriptExecutor;
-import com.facebook.react.bridge.JavaScriptExecutor;
+import com.facebook.react.cxxbridge.CatalystInstanceImpl;
+import com.facebook.react.cxxbridge.JSBundleLoader;
+import com.facebook.react.cxxbridge.JSCJavaScriptExecutor;
+import com.facebook.react.cxxbridge.JavaScriptExecutor;
 import com.facebook.react.bridge.JavaScriptModule;
 import com.facebook.react.bridge.JavaScriptModuleRegistry;
 import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.NativeModuleCallExceptionHandler;
-import com.facebook.react.bridge.NativeModuleRegistry;
+import com.facebook.react.cxxbridge.NativeModuleRegistry;
 import com.facebook.react.bridge.ReactApplicationContext;
+import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.bridge.queue.ReactQueueConfigurationSpec;
-import com.facebook.react.devsupport.DevSupportManager;
+import com.facebook.react.devsupport.interfaces.DevSupportManager;
 import com.facebook.soloader.SoLoader;
 
 import java.util.ArrayList;
@@ -27,6 +29,7 @@ public class ReactContextBuilder {
     private Context parentContext;
     private JSBundleLoader jsBundleLoader;
     private DevSupportManager devSupportManager;
+    private ReactInstanceManager instanceManager;
     private ArrayList<ReactPackage> reactPackages;
 
     public ReactContextBuilder(Context context) {
@@ -44,13 +47,18 @@ public class ReactContextBuilder {
         return this;
     }
 
+    public ReactContextBuilder setReactInstanceManager(ReactInstanceManager manager) {
+        this.instanceManager = manager;
+        return this;
+    }
+
     public ReactContextBuilder setReactPackages(ArrayList<ReactPackage> reactPackages) {
         this.reactPackages = reactPackages;
         return this;
     }
 
     public ReactApplicationContext build() throws Exception {
-        JavaScriptExecutor jsExecutor = new JSCJavaScriptExecutor.Factory().create(new WritableNativeMap());
+        JavaScriptExecutor jsExecutor = new JSCJavaScriptExecutor.Factory(new WritableNativeMap()).create();
 
         // fresh new react context
         final ReactApplicationContext reactContext = new ReactApplicationContext(parentContext);
@@ -59,7 +67,7 @@ public class ReactContextBuilder {
         }
 
         // load native modules
-        NativeModuleRegistry.Builder nativeRegistryBuilder = new NativeModuleRegistry.Builder();
+        NativeModuleRegistryBuilder nativeRegistryBuilder = new NativeModuleRegistryBuilder(reactContext, this.instanceManager, false);
         addNativeModules(reactContext, nativeRegistryBuilder);
 
         // load js modules
@@ -134,11 +142,11 @@ public class ReactContextBuilder {
         }
     }
 
-    private void addNativeModules(ReactApplicationContext reactContext, NativeModuleRegistry.Builder nativeRegistryBuilder) {
+    private void addNativeModules(ReactApplicationContext reactContext, NativeModuleRegistryBuilder nativeRegistryBuilder) {
         for (int i = 0; i < reactPackages.size(); i++) {
             ReactPackage reactPackage = reactPackages.get(i);
             for (NativeModule nativeModule : reactPackage.createNativeModules(reactContext)) {
-                nativeRegistryBuilder.add(nativeModule);
+                nativeRegistryBuilder.addNativeModule(nativeModule);
             }
         }
     }
