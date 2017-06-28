@@ -135,9 +135,9 @@ public class WorkerModule extends ReactContextBaseJavaModule implements Lifecycl
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
-                for (int workerId : workers.keySet()) {
-                    workers.get(workerId).onHostPause();
-                }
+                // for (int workerId : workers.keySet()) {
+                //     workers.get(workerId).onHostPause();
+                // }
             }
         });
     }
