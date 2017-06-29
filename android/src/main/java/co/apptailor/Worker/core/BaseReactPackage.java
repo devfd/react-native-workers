@@ -43,7 +43,7 @@ public class BaseReactPackage implements ReactPackage {
                 new ExceptionsManagerModule(reactInstanceManager.getDevSupportManager()),
                 new Timing(catalystApplicationContext, reactInstanceManager.getDevSupportManager()),
                 new UIManagerStubModule(catalystApplicationContext),
-                new SourceCodeModule(reactInstanceManager.getSourceUrl()),
+                new SourceCodeModule(catalystApplicationContext),
                 new JSCHeapCapture(catalystApplicationContext),
 
                 // Main list

@@ -1,7 +1,7 @@
 #import "WorkerManager.h"
 #import "WorkerSelfManager.h"
 #include <stdlib.h>
-#import "RCTBridge.h"
+#import "React/RCTBridge.h"
 #import "RCTBridge+Private.h"
 #import "RCTEventDispatcher.h"
 #import "RCTBundleURLProvider.h"

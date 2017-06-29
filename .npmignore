@@ -8,7 +8,7 @@ example
 
 # Xcode
 #
-build/
+# build/
 *.pbxuser
 !default.pbxuser
 *.mode1v3
@@ -35,7 +35,7 @@ local.properties
 local.properties
 .idea/workspace.xml
 .idea/libraries
-build
+# build
 captures
 
 # node.js

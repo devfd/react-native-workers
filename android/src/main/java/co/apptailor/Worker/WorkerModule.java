@@ -7,13 +7,13 @@ import android.util.Log;
 import com.facebook.react.ReactApplication;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactPackage;
-import com.facebook.react.bridge.JSBundleLoader;
+import com.facebook.react.cxxbridge.JSBundleLoader;
 import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
-import com.facebook.react.devsupport.DevSupportManager;
+import com.facebook.react.devsupport.interfaces.DevSupportManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -66,6 +66,7 @@ public class WorkerModule extends ReactContextBaseJavaModule implements Lifecycl
             ReactContextBuilder workerContextBuilder = new ReactContextBuilder(getReactApplicationContext())
                     .setJSBundleLoader(bundleLoader)
                     .setDevSupportManager(getDevSupportManager())
+                    .setReactInstanceManager(getReactInstanceManager())
                     .setReactPackages(workerPackages);
 
             JSWorker worker = new JSWorker(jsFileSlug);
@@ -134,9 +135,9 @@ public class WorkerModule extends ReactContextBaseJavaModule implements Lifecycl
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
-                for (int workerId : workers.keySet()) {
-                    workers.get(workerId).onHostPause();
-                }
+                // for (int workerId : workers.keySet()) {
+                //     workers.get(workerId).onHostPause();
+                // }
             }
         });
     }
@@ -177,7 +178,7 @@ public class WorkerModule extends ReactContextBaseJavaModule implements Lifecycl
 
     private JSBundleLoader createReleaseBundleLoader(String jsFileName, String jsFileSlug) {
         Log.d(TAG, "createReleaseBundleLoader - reading file from assets");
-        return JSBundleLoader.createFileLoader(getReactApplicationContext(), "assets://workers/" + jsFileSlug + ".bundle");
+        return JSBundleLoader.createFileLoader("assets://workers/" + jsFileSlug + ".bundle");
     }
 
     private ReactInstanceManager getReactInstanceManager() {
